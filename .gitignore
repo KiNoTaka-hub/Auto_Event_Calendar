@@ -1,0 +1,13 @@
+# Google API認証関連のファイルはGitHubに上げない！
+credentials.json
+token.json
+
+# Pythonが生成するキャッシュファイルとかは無視
+__pycache__/
+*.pyc
+
+# ログファイルは無視
+*.log
+
+# アップロードされたファイルは無視
+uploads/
