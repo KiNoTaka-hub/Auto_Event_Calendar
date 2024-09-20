@@ -1,14 +1,17 @@
+import json
+import os
 from flask import Flask, request, redirect, url_for
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from werkzeug.utils import secure_filename
-import os
 import pdfplumber
 from docx import Document
 from dateutil import parser
 
 app = Flask(__name__)
+
+# Google Calendar APIのスコープ
 SCOPES = ['https://www.googleapis.com/auth/calendar']
 
 @app.route('/')
@@ -40,6 +43,7 @@ def upload_file():
 
     return 'Googleカレンダーにイベント登録完了！'
 
+# PDFやWordからテキストを抽出
 def extract_text_from_file(file_path):
     if file_path.endswith('.pdf'):
         with pdfplumber.open(file_path) as pdf:
@@ -51,6 +55,7 @@ def extract_text_from_file(file_path):
         text = '対応してないファイル形式だよ！'
     return text
 
+# テキストからイベント情報を抽出
 def extract_event_info(text):
     try:
         date = parser.parse(text, fuzzy=True)
@@ -62,8 +67,17 @@ def extract_event_info(text):
         'end': date
     }
 
+# 環境変数からcredentials.jsonを読み込む関数
+def load_credentials():
+    credentials_info = os.getenv('GOOGLE_CREDENTIALS')  # Railwayの環境変数から取得
+    if credentials_info:
+        credentials_data = json.loads(credentials_info)
+        return Credentials.from_authorized_user_info(credentials_data, SCOPES)
+    return None
+
+# Googleカレンダーにイベントを登録
 def create_google_calendar_event(summary, start, end):
-    creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+    creds = load_credentials()  # 環境変数から認証情報を取得
     service = build('calendar', 'v3', credentials=creds)
 
     event = {
