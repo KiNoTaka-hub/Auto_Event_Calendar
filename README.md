@@ -1,0 +1,2 @@
+# Auto_Event_Calendar
+PDFやwordのイベント情報をGoogleカレンダーに自動登録します
